@@ -16,7 +16,7 @@ services:
       - db
       - app
     networks:
-        - webapp1_default
+        - web_network
 
   # dbサーバ用
   db:
@@ -30,7 +30,7 @@ services:
     volumes:
       - ../data/mysql:/var/lib/mysql:rw
     networks:
-        - webapp1_default
+        - web_network
 
   # appサーバ用
   app:
@@ -47,7 +47,7 @@ services:
     depends_on:
       - db
     networks:
-        - webapp1_default
+        - web_network
 
   # batchサーバ用
   batch:
@@ -64,7 +64,7 @@ services:
     depends_on:
       - db
     networks:
-        - webapp1_default
+        - web_network
       
   # mailサーバ用
   mail:
@@ -79,7 +79,7 @@ services:
     volumes:
       - ../data/tmp:/tmp/dockerVM:rw
     networks:
-        - webapp1_default
+        - web_network
 
   # opensslサーバ用
   openssl:
@@ -95,7 +95,12 @@ services:
       - ../data/tmp:/tmp/dockerVM:rw
       - ../data/openssl:/tmp/openssl:rw
     networks:
-        - webapp1_default
+        - web_network
 
+# ネットワーク
 networks:
-    webapp1_default:
+  web_network:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
