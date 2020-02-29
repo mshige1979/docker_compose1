@@ -1,0 +1,101 @@
+version: "2"
+
+services:
+
+  # webサーバ用
+  web:
+    build:
+      context: ./nginx
+      dockerfile: nginx.Dockerfile
+    image: app-nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - db
+      - app
+    networks:
+        - webapp1_default
+
+  # dbサーバ用
+  db:
+    image: mysql:8.0.19
+    container_name: mysql
+    tty: true
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./_env/db.env
+    volumes:
+      - ../data/mysql:/var/lib/mysql:rw
+    networks:
+        - webapp1_default
+
+  # appサーバ用
+  app:
+    build:
+      context: ./app
+      dockerfile: app.Dockerfile
+    image: app
+    container_name: app
+    tty: true
+    env_file:
+      - ./_env/proxy.env
+    volumes:
+      - ../data/tmp:/tmp/dockerVM:rw
+    depends_on:
+      - db
+    networks:
+        - webapp1_default
+
+  # batchサーバ用
+  batch:
+    build:
+      context: ./batch
+      dockerfile: batch.Dockerfile
+    image: batch
+    container_name: batch
+    tty: true
+    env_file:
+      - ./_env/proxy.env
+    volumes:
+      - ../data/tmp:/tmp/dockerVM:rw
+    depends_on:
+      - db
+    networks:
+        - webapp1_default
+      
+  # mailサーバ用
+  mail:
+    build:
+      context: ./mail
+      dockerfile: mail.Dockerfile
+    image: mail
+    container_name: mail
+    tty: true
+    env_file:
+      - ./_env/proxy.env
+    volumes:
+      - ../data/tmp:/tmp/dockerVM:rw
+    networks:
+        - webapp1_default
+
+  # opensslサーバ用
+  openssl:
+    build:
+      context: ./openssl
+      dockerfile: openssl.Dockerfile
+    image: openssl
+    container_name: openssl
+    tty: true
+    env_file:
+      - ./_env/proxy.env
+    volumes:
+      - ../data/tmp:/tmp/dockerVM:rw
+      - ../data/openssl:/tmp/openssl:rw
+    networks:
+        - webapp1_default
+
+networks:
+    webapp1_default:
